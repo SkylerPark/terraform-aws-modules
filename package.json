@@ -1,0 +1,18 @@
+{
+  "devDependencies": {
+    "@commitlint/cli": "^18.2.0",
+    "@commitlint/config-conventional": "^18.1.0",
+    "husky": "^8.0.0",
+    "standard-version": "^9.5.0"
+  },
+  "name": "terraform-aws-modules",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/SkylerPark/terraform-aws-modules.git",
+  "author": "dbzho <parksm@com2us.com>",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "husky install",
+    "release": "standard-version"
+  }
+}

@@ -1,0 +1,9 @@
+# npm
+node_modules/*
+yarn.lock
+
+# terraform
+**/.terraform/*
+.terraform.lock.hcl
+terraform.tfstate*
+.terraform.tfstate.lock.*
