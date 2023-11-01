@@ -7,7 +7,6 @@ locals {
   grants            = try(jsondecode(var.grant), var.grant)
   lifecycle_rules   = try(jsondecode(var.lifecycle_rule), var.lifecycle_rule)
   attach_policy     = var.attach_require_latest_tls_policy || var.attach_access_log_delivery_policy || var.attach_elb_log_delivery_policy || var.attach_lb_log_delivery_policy || var.attach_deny_insecure_transport_policy || var.attach_inventory_destination_policy || var.attach_deny_incorrect_encryption_headers || var.attach_deny_incorrect_kms_key_sse || var.attach_deny_unencrypted_object_uploads || var.attach_policy
-
 }
 
 resource "aws_s3_bucket" "this" {
