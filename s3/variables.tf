@@ -106,12 +106,6 @@ variable "attach_deny_incorrect_encryption_headers" {
   default     = false
 }
 
-variable "attach_deny_incorrect_encryption_headers" {
-  description = "Controls if S3 bucket should deny incorrect encryption headers policy attached."
-  type        = bool
-  default     = false
-}
-
 variable "attach_deny_unencrypted_object_uploads" {
   description = "Controls if S3 bucket should deny unencrypted object uploads policy attached."
   type        = bool
