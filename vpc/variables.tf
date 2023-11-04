@@ -74,8 +74,8 @@ variable "subnets" {
 
 variable "subnet_tags" {
   description = "Additional tags for the Subnet"
-  type        = map(string)
-  default     = {}
+  type        = list(any)
+  default     = []
 }
 
 variable "availability_zones" {
