@@ -37,7 +37,7 @@ resource "aws_subnet" "this" {
 
   tags = merge(
     { "Name" = try(each.value.name, format("%s-subnet-%s", var.name, var.availability_zones[index(keys(local.subnets), each.key) % length(var.subnets)])) },
-    each.value.tags,
+    try(each.value.tags, {}),
     var.subnet_tags,
   )
 }
