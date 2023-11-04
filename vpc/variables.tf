@@ -67,19 +67,14 @@ variable "vpc_id" {
 }
 
 variable "subnets" {
-  description = "A mapm of Subnet List"
-  type        = any
-  default     = {}
-}
-
-variable "subnet_tags" {
-  description = "Additional tags for the Subnet"
+  description = "Subnet List"
   type        = list(any)
   default     = []
 }
 
-variable "availability_zones" {
-  description = "A list of availability zones names or ids in the region"
-  type        = list(string)
-  default     = []
+variable "subnet_tags" {
+  description = "Additional tags for the Subnet"
+  type        = map(string)
+  default     = {}
 }
+
