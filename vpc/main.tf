@@ -22,7 +22,7 @@ resource "aws_vpc" "this" {
 }
 
 resource "aws_subnet" "this" {
-  for_each = { for subnet in var.subnets : "${subnet.name}/${subnet.availability_zone}/${subnet.cidr_block}" => subnet }
+  for_each = { for subnet in var.subnets : "${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}" => subnet }
 
   vpc_id                  = local.vpc_id
   cidr_block              = each.value.cidr_block
