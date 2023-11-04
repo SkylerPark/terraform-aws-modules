@@ -60,6 +60,12 @@ variable "tags" {
 # Subnet
 ################################################################################
 
+variable "vpc_id" {
+  description = "The VPC ID."
+  type        = string
+  default     = ""
+}
+
 variable "subnets" {
   description = "A mapm of Subnet List"
   type        = any
