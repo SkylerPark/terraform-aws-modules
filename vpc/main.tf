@@ -23,10 +23,10 @@ locals {
   subnets = flatten([
     for k, v in var.subnets : [
       for cidr in v.cidr_blocks : {
-        name                    = try(v.name, format("%s-%s-subnet-%s", var.name, k, var.availability_zones[index(keys(local.subnets), each.key) % length(var.availability_zones)]))
+        name                    = try(v.name, format("%s-%s-subnet-%s", var.name, k, try(v.availability_zone, var.availability_zones[v.cidr_blocks % length(var.availability_zones) % length(var.availability_zones)])))
         key                     = "${k}/${cidr}"
         cidr_block              = cidr
-        availability_zone       = try(v.availability_zone, var.availability_zones[index(keys(local.subnets), each.key) % length(var.availability_zones)])
+        availability_zone       = try(v.availability_zone, var.availability_zones[v.cidr_blocks % length(var.availability_zones) % length(var.availability_zones)])
         map_public_ip_on_launch = try(v.map_public_ip_on_launch, false)
       }
     ]
