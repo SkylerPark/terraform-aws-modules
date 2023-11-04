@@ -90,11 +90,11 @@ resource "aws_nat_gateway" "this" {
   count = var.create_vpc && var.create_nat_gw ? local.nat_gateway_count : 0
 
   allocation_id = element(
-    aws_eip.this,
+    aws_eip.this[*],
     var.single_nat_gateway ? 0 : count.index,
   )
   subnet_id = element(
-    data.aws_subnets.public[0].ids,
+    data.aws_subnets.public[0].ids[*],
     var.single_nat_gateway ? 0 : count.index,
   )
 
