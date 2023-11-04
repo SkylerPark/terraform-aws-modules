@@ -62,7 +62,7 @@ resource "aws_eip" "this" {
     {
       "Name" = format(
         "${var.name}-natgw-%s",
-        element(local.availability_zone, var.single_nat_gateway ? 0 : count.index),
+        element(local.availability_zones, var.single_nat_gateway ? 0 : count.index),
       )
     },
     var.tags,
@@ -102,7 +102,7 @@ resource "aws_nat_gateway" "this" {
     {
       "Name" = format(
         "${var.name}-natgw-%s",
-        element(var.availability_zone, var.single_nat_gateway ? 0 : count.index),
+        element(local.availability_zones, var.single_nat_gateway ? 0 : count.index),
       )
     },
     var.tags,
