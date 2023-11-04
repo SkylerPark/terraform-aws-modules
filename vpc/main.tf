@@ -30,7 +30,7 @@ locals {
 resource "aws_subnet" "this" {
   for_each = { for subnet in local.subnets : subnet => subnet }
 
-  vpc_id                  = var.vpc_id != "" ? aws_vpc.this[0].id : vae.vpc_id
+  vpc_id                  = var.vpc_id != "" ? aws_vpc.this[0].id : var.vpc_id
   cidr_block              = each.value.cidr_block
   availability_zone       = try(each.value.availability_zone, var.availability_zones[index(keys(local.subnets), each.key) % length(var.subnets)])
   map_public_ip_on_launch = try(each.value.map_public_ip_on_launch, false)
