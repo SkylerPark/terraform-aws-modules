@@ -87,7 +87,7 @@ data "aws_subnets" "public" {
 }
 
 resource "aws_nat_gateway" "this" {
-  count = local.create_vpc && var.create_nat_gw ? local.nat_gateway_count : 0
+  count = var.create_vpc && var.create_nat_gw ? local.nat_gateway_count : 0
 
   allocation_id = element(
     aws_eip.this,
