@@ -73,7 +73,7 @@ resource "aws_eip" "this" {
 }
 
 data "aws_subnets" "public" {
-  count = var.create_nat_gw ? 1 : 0
+  count = var.create_nat_gw && local.nat_gateway_count > 0 ? 1 : 0
   filter {
     name   = "vpc-id"
     values = [local.vpc_id]
