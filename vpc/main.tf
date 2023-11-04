@@ -36,7 +36,7 @@ resource "aws_subnet" "this" {
   map_public_ip_on_launch = try(each.value.map_public_ip_on_launch, false)
 
   tags = merge(
-    { "Name" = try(each.value.name, format("%s-subnet-%s", var.name, var.availability_zone[index(keys(local.subnets), each.key) % length(var.subnets)])) },
+    { "Name" = try(each.value.name, format("%s-subnet-%s", var.name, var.availability_zones[index(keys(local.subnets), each.key) % length(var.subnets)])) },
     each.value.tags,
     var.subnet_tags,
   )
