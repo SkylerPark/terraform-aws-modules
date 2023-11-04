@@ -50,7 +50,7 @@ resource "aws_internet_gateway" "this" {
 
 locals {
   availability_zones = distinct([for subnet in var.subnets : subnet.availability_zone])
-  nat_gateway_count  = var.single_nat_gateway ? var.one_nat_gateway_per_az ? length(local.availability_zones) : 1 : 0
+  nat_gateway_count  = var.single_nat_gateway ? 1 : var.one_nat_gateway_per_az ? length(local.availability_zones) : 0
 }
 
 resource "aws_eip" "this" {
