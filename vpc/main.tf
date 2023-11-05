@@ -50,8 +50,8 @@ resource "aws_internet_gateway" "this" {
 }
 
 locals {
-  public_availability_zones = distinct([for subnet in var.subnets : subnet.availability_zone if contains(subnet.tier, "public")])
-  nat_gateway_count         = var.single_nat_gateway ? 1 : var.one_nat_gateway_per_az ? length(local.public_availability_zones) : 0
+  availability_zones = distinct([for subnet in var.subnets : subnet.availability_zone])
+  nat_gateway_count  = var.single_nat_gateway ? 1 : var.one_nat_gateway_per_az ? length(local.availability_zones) : 0
 }
 
 resource "aws_eip" "this" {
@@ -63,7 +63,7 @@ resource "aws_eip" "this" {
     {
       "Name" = format(
         "${var.name}-natgw-%s",
-        element(local.public_availability_zones, var.single_nat_gateway ? 0 : count.index),
+        element(local.availability_zones, var.single_nat_gateway ? 0 : count.index),
       )
     },
     var.tags,
@@ -103,7 +103,7 @@ resource "aws_nat_gateway" "this" {
     {
       "Name" = format(
         "${var.name}-natgw-%s",
-        element(local.public_availability_zones, var.single_nat_gateway ? 0 : count.index),
+        element(local.availability_zones, var.single_nat_gateway ? 0 : count.index),
       )
     },
     var.tags,
@@ -113,9 +113,6 @@ resource "aws_nat_gateway" "this" {
   depends_on = [aws_internet_gateway.this]
 }
 
-locals {
-  private_route_tables = [for rt in var.route_tables : rt if contains(rt.name, "private")]
-}
 
 resource "aws_route_table" "this" {
   for_each         = { for route in var.route_tables : route.name => route }
@@ -132,7 +129,7 @@ resource "aws_route_table" "this" {
         ] : each.value.eanble_nat_gw ? [
         {
           cidr_block     = "0.0.0.0/0"
-          nat_gateway_id = try(each.value.nat_gw_id, element(aws_nat_gateway.this, var.single_nat_gateway ? 0 : length(local.private_route_tables) % length(local.public_availability_zones)))
+          nat_gateway_id = try(each.value.nat_gw_id, element(aws_nat_gateway.this, var.single_nat_gateway ? 0 : tonumber(regex(".*-(\\d+)$", local.input_string)[0]) - 1 % length(local.availability_zones)))
         }
       ] :
     [], try(each.value.routes, []))
