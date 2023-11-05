@@ -137,3 +137,20 @@ variable "nat_eip_tags" {
   type        = map(string)
   default     = {}
 }
+
+################################################################################
+# Route Table
+################################################################################
+
+variable "route_tables" {
+  description = "Route Table List"
+  type        = list(any)
+  default     = []
+}
+
+variable "route_table_tags" {
+  description = "Additional tags for the Route Table"
+  type        = map(string)
+  default     = {}
+}
+

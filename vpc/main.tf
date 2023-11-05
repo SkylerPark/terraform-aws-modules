@@ -33,6 +33,7 @@ resource "aws_subnet" "this" {
     { "Name" = "${each.value.name}-${each.value.tier}-subnet-${each.value.availability_zone}", "Tier" = "${each.value.tier}" },
     try(each.value.tags, {}),
     var.subnet_tags,
+    var.tags
   )
 }
 
@@ -49,8 +50,8 @@ resource "aws_internet_gateway" "this" {
 }
 
 locals {
-  availability_zones = distinct([for subnet in var.subnets : subnet.availability_zone])
-  nat_gateway_count  = var.single_nat_gateway ? 1 : var.one_nat_gateway_per_az ? length(local.availability_zones) : 0
+  public_availability_zones = distinct([for subnet in var.subnets : subnet.availability_zone if contains(subnet.tire, "public")])
+  nat_gateway_count         = var.single_nat_gateway ? 1 : var.one_nat_gateway_per_az ? length(local.public_availability_zones) : 0
 }
 
 resource "aws_eip" "this" {
@@ -62,7 +63,7 @@ resource "aws_eip" "this" {
     {
       "Name" = format(
         "${var.name}-natgw-%s",
-        element(local.availability_zones, var.single_nat_gateway ? 0 : count.index),
+        element(local.public_availability_zones, var.single_nat_gateway ? 0 : count.index),
       )
     },
     var.tags,
@@ -102,7 +103,7 @@ resource "aws_nat_gateway" "this" {
     {
       "Name" = format(
         "${var.name}-natgw-%s",
-        element(local.availability_zones, var.single_nat_gateway ? 0 : count.index),
+        element(local.public_availability_zones, var.single_nat_gateway ? 0 : count.index),
       )
     },
     var.tags,
@@ -110,4 +111,67 @@ resource "aws_nat_gateway" "this" {
   )
 
   depends_on = [aws_internet_gateway.this]
+}
+
+locals {
+  private_route_tables = [for rt in var.route_tables : rt if contains(rt.name, "private")]
+}
+
+resource "aws_route_table" "this" {
+  for_each         = { for route in var.route_tables : route.name => route }
+  vpc_id           = local.vpc_id
+  propagating_vgws = try(each.value.propagating_vgws, [])
+
+  dynamic "route" {
+    for_each = concat(
+      each.value.enable_igw ? [
+        {
+          cidr_block = "0.0.0.0/0",
+          gateway_id = try(each.value.igw_id, aws_internet_gateway.this[0].id)
+        }
+        ] : each.value.eanble_nat_gw ? [
+        {
+          cidr_block     = "0.0.0.0/0"
+          nat_gateway_id = try(each.value.nat_gw_id, element(aws_nat_gateway.this, var.single_nat_gateway ? 0 : length(local.private_route_tables) % length(local.public_availability_zones)))
+        }
+      ] :
+    [], try(each.value.routes, []))
+    content {
+      cidr_block                 = try(route.value.cidr_block, null)
+      ipv6_cidr_block            = try(route.value.ipv6_cidr_block, null)
+      destination_prefix_list_id = try(route.value.destination_prefix_list_id, null)
+      carrier_gateway_id         = try(route.value.destination_prefix_list_id, null)
+      core_network_arn           = try(route.value.core_network_arn, null)
+      egress_only_gateway_id     = try(route.value.egress_only_gateway_id, null)
+      gateway_id                 = try(route.value.gateway_id, null)
+      local_gateway_id           = try(route.value.local_gateway_id, null)
+      nat_gateway_id             = try(route.value.nat_gateway_id, null)
+      transit_gateway_id         = try(route.value.transit_gateway_id, null)
+      vpc_endpoint_id            = try(route.value.vpc_endpoint_id, null)
+      vpc_peering_connection_id  = try(route.value.vpc_peering_connection_id, null)
+    }
+  }
+
+  tags = merge(
+    { "Name" = each.key },
+    try(each.value.tags, {}),
+    var.route_table_tags,
+    var.tags
+  )
+}
+
+locals {
+  route_table_associations = [
+    for subnet in var.subnets : {
+      name           = "${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}/${var.route_tables["${subnet.route_table_index}"].name}"
+      subnet_id      = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].id
+      route_table_id = try(aws_route_table[var.route_tables["${subnet.route_table_index}"].name].id, null)
+    }
+  ]
+}
+
+resource "aws_route_table_association" "this" {
+  for_each       = { for table_association in local.route_table_associations : table_association.name => table_association }
+  subnet_id      = each.value.subnet_id
+  route_table_id = each.value.route_table_id
 }
