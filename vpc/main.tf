@@ -92,7 +92,7 @@ resource "aws_nat_gateway" "this" {
 
   allocation_id = aws_eip.this[each.key].id
 
-  subnet_id = data.aws_subnets[each.key].ids[0]
+  subnet_id = data.aws_subnets.public[each.key].ids[0]
 
   tags = merge(
     {
