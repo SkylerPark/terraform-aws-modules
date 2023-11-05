@@ -51,11 +51,11 @@ resource "aws_internet_gateway" "this" {
 
 locals {
   availability_zones = distinct([for subnet in var.subnets : subnet.availability_zone])
-  nat_gateway_count  = var.single_nat_gateway ? [local.availability_zones[0]] : var.one_nat_gateway_per_az ? local.availability_zones : []
+  nat_gateway_count  = var.create_vpc && var.create_nat_gw ? var.single_nat_gateway ? [local.availability_zones[0]] : var.one_nat_gateway_per_az ? local.availability_zones : [] : []
 }
 
 resource "aws_eip" "this" {
-  for_each = var.create_vpc && var.create_nat_gw ? toset(local.nat_gateway_count) : {}
+  for_each = toset(local.nat_gateway_count)
 
   domain = "vpc"
 
@@ -88,7 +88,7 @@ data "aws_subnets" "public" {
   }
 }
 resource "aws_nat_gateway" "this" {
-  for_each = var.create_vpc && var.create_nat_gw ? toset(local.nat_gateway_count) : {}
+  for_each = toset(local.nat_gateway_count)
 
   allocation_id = aws_eip.this[each.key].id
 
