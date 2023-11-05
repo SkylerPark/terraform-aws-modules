@@ -96,10 +96,7 @@ resource "aws_nat_gateway" "this" {
 
   tags = merge(
     {
-      "Name" = format(
-        "${var.name}-natgw-%s",
-        element(local.availability_zones, var.single_nat_gateway ? 0 : count.index),
-      )
+      "Name" = "${var.name}-natgw-${each.key}"
     },
     var.tags,
     var.nat_gw_tags,
