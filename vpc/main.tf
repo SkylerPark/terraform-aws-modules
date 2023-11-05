@@ -71,7 +71,7 @@ resource "aws_eip" "this" {
 }
 
 data "aws_subnets" "public" {
-  for_each = local.nat_gateway_count
+  for_each = toset(local.nat_gateway_count)
 
   filter {
     name   = "vpc-id"
