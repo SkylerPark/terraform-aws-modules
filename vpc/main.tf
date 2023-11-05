@@ -121,12 +121,13 @@ resource "aws_route_table" "this" {
 
   dynamic "route" {
     for_each = concat(
-      each.value.enable_igw ? [
+      try(each.value.enable_igw, false) ? [
         {
           cidr_block = "0.0.0.0/0",
           gateway_id = try(each.value.igw_id, aws_internet_gateway.this[0].id)
         }
-        ] : each.value.eanble_nat_gw ? [
+      ] :
+      try(each.value.eanble_nat_gw, false) ? [
         {
           cidr_block     = "0.0.0.0/0"
           nat_gateway_id = try(each.value.nat_gw_id, element(aws_nat_gateway.this, var.single_nat_gateway ? 0 : tonumber(regex(".*-(\\d+)$", each.key)[0]) - 1 % length(local.availability_zones)))
