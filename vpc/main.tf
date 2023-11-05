@@ -121,7 +121,7 @@ resource "aws_route_table" "this" {
       try(each.value.enable_nat_gw, false) ? [
         {
           cidr_block     = "0.0.0.0/0"
-          nat_gateway_id = try(each.value.nat_gw_id, aws_nat_gateway.this[each.value.nat_gateway_az].id)
+          nat_gateway_id = try(each.value.nat_gw_id, aws_nat_gateway.this[each.value.nat_gw_az].id)
         }
       ] :
     [], try(each.value.routes, []))
@@ -154,7 +154,7 @@ locals {
     for subnet in var.subnets : {
       name           = "${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}/${var.route_tables["${subnet.route_table_index}"].name}"
       subnet_id      = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].id
-      route_table_id = try(aws_route_table.this[var.route_tables["${subnet.route_table_index}"].name].id, null)
+      route_table_id = try(aws_route_table.this[try(subnet.route_table_name, "${subnet.name}-${subnet.tier}-rt-01")].id, null)
     }
   ]
 }
