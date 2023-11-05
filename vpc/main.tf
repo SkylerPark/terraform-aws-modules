@@ -127,7 +127,7 @@ resource "aws_route_table" "this" {
           gateway_id = try(each.value.igw_id, aws_internet_gateway.this[0].id)
         }
       ] :
-      try(each.value.eanble_nat_gw, false) ? [
+      try(each.value.enable_nat_gw, false) ? [
         {
           cidr_block     = "0.0.0.0/0"
           nat_gateway_id = try(each.value.nat_gw_id, element(aws_nat_gateway.this, var.single_nat_gateway ? 0 : tonumber(regex(".*-(\\d+)$", each.key)[0]) - 1 % length(local.availability_zones)))
