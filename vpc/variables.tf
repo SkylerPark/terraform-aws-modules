@@ -144,7 +144,7 @@ variable "nat_eip_tags" {
 
 variable "route_tables" {
   description = "Route Table List"
-  type        = list(any)
+  type        = any
   default     = []
 }
 

@@ -50,7 +50,7 @@ resource "aws_internet_gateway" "this" {
 }
 
 locals {
-  public_availability_zones = distinct([for subnet in var.subnets : subnet.availability_zone if contains(subnet.tire, "public")])
+  public_availability_zones = distinct([for subnet in var.subnets : subnet.availability_zone if contains(subnet.tier, "public")])
   nat_gateway_count         = var.single_nat_gateway ? 1 : var.one_nat_gateway_per_az ? length(local.public_availability_zones) : 0
 }
 
