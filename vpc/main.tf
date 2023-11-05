@@ -165,7 +165,7 @@ locals {
     for subnet in var.subnets : {
       name           = "${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}/${var.route_tables["${subnet.route_table_index}"].name}"
       subnet_id      = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].id
-      route_table_id = try(aws_route_table[var.route_tables["${subnet.route_table_index}"].name].id, null)
+      route_table_id = try(aws_route_table.this[var.route_tables["${subnet.route_table_index}"].name].id, null)
     }
   ]
 }
