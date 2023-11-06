@@ -39,3 +39,30 @@ output "nat_ids" {
   description = "List of allocation ID of Elastic IPs created for AWS NAT Gateway"
   value       = [for eip in aws_eip.this : eip.id]
 }
+
+output "nat_public_ips" {
+  description = "List of public Elastic IPs created for AWS NAT Gateway"
+  value       = [for eip in aws_eip.this : eip.public_ip]
+}
+
+output "natgw_ids" {
+  description = "List of NAT Gateway IDs"
+  value       = [for natgw in aws_nat_gateway.this : natgw.id]
+}
+
+################################################################################
+# Subnets And RouteTable
+################################################################################
+
+output "subnets" {
+  description = "The Info of the Subnet All Resource"
+  value = {
+    for subnet in var.subnets : "${subent.name}-${subnet.tier}-subnet-${subnetavailability_zone}" => {
+      id                = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].id
+      cidr_block        = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].cidr_block
+      availability_zone = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].availability_zones
+      route_table_name  = subnet.route_table_name
+      route_table_id    = aws_route_table.this["${subnet.route_table_name}"].id
+    }
+  }
+}
