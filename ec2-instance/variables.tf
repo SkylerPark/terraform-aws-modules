@@ -123,7 +123,7 @@ variable "associate_public_ip_address" {
 variable "disable_api_termination" {
   description = "(Optional) If true, enables EC2 Instance Termination Protection."
   type        = bool
-  default     = false
+  default     = true
 }
 
 ################################################################################
