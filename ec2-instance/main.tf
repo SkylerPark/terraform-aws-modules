@@ -72,7 +72,7 @@ resource "aws_instance" "this" {
       Name = "${var.name}-${each.key}"
     }
   )
-  volume_tags = var.enable_volume_tags ? var.volume_tags : null
+  volume_tags = var.volume_tags
 }
 
 locals {
