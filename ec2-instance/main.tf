@@ -25,8 +25,8 @@ resource "aws_instance" "this" {
   ami           = local.ami
   instance_type = var.instance_type
 
-  availability_zone      = var.availability_zones[index(keys(var.num_instances), each.key) % length(var.availability_zones)]
-  subnet_id              = var.subnet_name == null ? var.subnet_ids[index(keys(var.num_instances), each.key) % length(var.subnet_ids)] : local.filter_subnets_one_az[index(keys(var.num_instances), each.key) % length(local.filter_subnets_one_az)]
+  availability_zone      = var.availability_zones[index(var.num_instances, each.key) % length(var.availability_zones)]
+  subnet_id              = var.subnet_name == null ? var.subnet_ids[index(var.num_instances, each.key) % length(var.subnet_ids)] : local.filter_subnets_one_az[index(var.num_instances, each.key) % length(local.filter_subnets_one_az)]
   vpc_security_group_ids = var.vpc_security_group_ids
 
   key_name             = var.key_name
