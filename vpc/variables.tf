@@ -1,17 +1,13 @@
-################################################################################
-# Common
-################################################################################
-
 variable "name" {
   description = "Name to be used on all the resources as identifier"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "vpc_id" {
   description = "The VPC ID."
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "tags" {
@@ -33,7 +29,7 @@ variable "create_vpc" {
 variable "vpc_name" {
   description = "VPC Name"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "cidr_block" {
@@ -89,7 +85,7 @@ variable "subnet_tags" {
 variable "igw_name" {
   description = "IGW Name"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "create_igw" {

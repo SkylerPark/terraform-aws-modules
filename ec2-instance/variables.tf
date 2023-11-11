@@ -1,7 +1,7 @@
 variable "name" {
   description = "Name to be used on EC2 instance created"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "availability_zones" {
@@ -35,13 +35,13 @@ variable "instance_type" {
 variable "ami" {
   description = "ID of AMI to use for the instance"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "subnet_name" {
   description = "The VPC Subnet Name to launch in"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "subnet_ids" {
@@ -83,7 +83,7 @@ variable "vpc_security_group_ids" {
 variable "key_name" {
   description = "Key name of the Key Pair to use for the instance; which can be managed using the `aws_key_pair` resource"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "monitoring" {

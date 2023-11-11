@@ -14,7 +14,7 @@ locals {
 }
 
 data "aws_ssm_parameter" "this" {
-  count = var.ami == "" ? 1 : 0
+  count = var.ami == null ? 1 : 0
 
   name = var.ami_ssm_parameter
 }
@@ -26,7 +26,7 @@ resource "aws_instance" "this" {
   instance_type = var.instance_type
 
   availability_zone      = var.availability_zones[index(keys(var.num_instances), each.key) % length(var.availability_zones)]
-  subnet_id              = var.subnet_name == "" ? var.subnet_ids[index(keys(var.num_instances), each.key) % length(var.subnet_ids)] : local.filter_subnets_one_az[index(keys(var.num_instances), each.key) % length(local.filter_subnets_one_az)]
+  subnet_id              = var.subnet_name == null ? var.subnet_ids[index(keys(var.num_instances), each.key) % length(var.subnet_ids)] : local.filter_subnets_one_az[index(keys(var.num_instances), each.key) % length(local.filter_subnets_one_az)]
   vpc_security_group_ids = var.vpc_security_group_ids
 
   key_name             = var.key_name

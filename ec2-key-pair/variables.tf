@@ -23,7 +23,7 @@ variable "key_name_prefix" {
 variable "public_key" {
   description = "The public key material"
   type        = string
-  default     = ""
+  default     = null
 }
 
 ################################################################################

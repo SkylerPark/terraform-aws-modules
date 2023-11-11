@@ -1,7 +1,7 @@
 locals {
-  vpc_name = var.vpc_name != "" ? var.vpc_name : "${var.name}-vpc-${data.aws_region.current.name}"
-  vpc_id   = var.vpc_id != "" ? var.vpc_id : aws_vpc.this[0].id
-  igw_name = var.igw_name != "" ? var.igw_name : "${var.name}-igw-${data.aws_region.current.name}"
+  vpc_name = var.vpc_name != null ? var.vpc_name : "${var.name}-vpc-${data.aws_region.current.name}"
+  vpc_id   = var.vpc_id != null ? var.vpc_id : aws_vpc.this[0].id
+  igw_name = var.igw_name != null ? var.igw_name : "${var.name}-igw-${data.aws_region.current.name}"
 }
 
 data "aws_region" "current" {}
