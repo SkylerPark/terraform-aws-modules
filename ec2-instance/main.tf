@@ -72,7 +72,7 @@ resource "aws_instance" "this" {
 }
 
 locals {
-  disable_api_termination = flatten([
+  ebs_block_device = flatten([
     for num in var.num_instances : [
       for ebs in var.ebs_block_device : merge(ebs, { name = "${var.name}-${num}-${ebs.name}", instance_id = aws_instance.this[num].id, availability_zone = aws_instance.this[num].availability_zone })
     ]
