@@ -13,7 +13,7 @@ variable "use_name_prefix" {
 variable "description" {
   description = "(Optional, Forces new resource) Security group description. Defaults to Managed by Terraform. Cannot be. NOTE: This field maps to the AWS GroupDescription attribute, for which there is no Update API. If you'd like to classify your security groups in a way that can be updated, use tags."
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "vpc_id" {
