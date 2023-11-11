@@ -8,7 +8,7 @@ resource "aws_security_group" "this" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_with_cidr_ipv4" {
-  for_each = { for rule in var.ingress_with_cidr_blocks : format("%s_%s_%d_%d_%s", "ingress", rule.ip_protocol, rule.from_port, rule.to_port, rule.cidr_ipv4) => rule }
+  for_each = { for rule in var.ingress_with_cidr_ipv4 : format("%s_%s_%d_%d_%s", "ingress", rule.ip_protocol, rule.from_port, rule.to_port, rule.cidr_ipv4) => rule }
 
   security_group_id = aws_security_group.this.id
   description       = try(each.value.description, "")
@@ -20,7 +20,7 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_with_cidr_ipv4" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "egress_with_cidr_ipv4" {
-  for_each = { for rule in var.egress_with_cidr_blocks : format("%s_%s_%d_%d_%s", "egress", rule.ip_protocol, rule.from_port, rule.to_port, rule.cidr_ipv4) => rule }
+  for_each = { for rule in var.egress_with_cidr_ipv4 : format("%s_%s_%d_%d_%s", "egress", rule.ip_protocol, rule.from_port, rule.to_port, rule.cidr_ipv4) => rule }
 
   security_group_id = aws_security_group.this.id
   description       = try(each.value.description, "")
@@ -32,7 +32,7 @@ resource "aws_vpc_security_group_egress_rule" "egress_with_cidr_ipv4" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_with_security_group_id" {
-  for_each = { for rule in var.ingress_with_source_security_group_id : format("%s_%s_%d_%d_%s", "ingress", rule.ip_protocol, rule.from_port, rule.to_port, rule.referenced_security_group_id) => rule }
+  for_each = { for rule in var.ingress_with_security_group_id : format("%s_%s_%d_%d_%s", "ingress", rule.ip_protocol, rule.from_port, rule.to_port, rule.referenced_security_group_id) => rule }
 
   security_group_id = aws_security_group.this.id
   description       = try(each.value.description, "")
