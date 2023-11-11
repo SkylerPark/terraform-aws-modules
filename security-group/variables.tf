@@ -57,3 +57,9 @@ variable "egress_with_cidr_ipv6" {
   type        = list(map(string))
   default     = []
 }
+
+variable "tags" {
+  description = "(Optional) A map of tags to assign to the resource."
+  type        = map(string)
+  default     = {}
+}
