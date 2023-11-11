@@ -56,18 +56,6 @@ variable "volume_tags" {
   default     = {}
 }
 
-variable "ignore_ami_changes" {
-  description = "Whether changes to the AMI ID changes should be ignored by Terraform. Note - changing this value will result in the replacement of the instance"
-  type        = bool
-  default     = false
-}
-
-variable "ignore_subnet_changes" {
-  description = "Whether changes to the Subnet ID changes should be ignored by Terraform. Note - changing this value will result in the replacement of the instance"
-  type        = bool
-  default     = false
-}
-
 variable "ami_ssm_parameter" {
   description = "SSM parameter name for the AMI ID. For Amazon Linux AMI SSM parameters see [reference](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-public-parameters-ami.html)"
   type        = string

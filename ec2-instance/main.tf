@@ -11,10 +11,6 @@ locals {
   is_t_instance_type = replace(var.instance_type, "/^t(2|3|3a|4g){1}\\..*$/", "1") == "1" ? true : false
 
   ami = try(coalesce(var.ami, try(nonsensitive(data.aws_ssm_parameter.this[0].value), null)), null)
-
-  ignores = concat(var.ignore_ami_changes ? [ami] : [], var.ignore_subnet_changes ? [subnet_id, availability_zone] : [], [])
-
-  subnet_ids = var.subnet_name == "" ? var.subnet_ids[index(keys(var.num_instances), each.key) % length(var.subnet_ids)] : local.filter_subnets_one_az[index(keys(var.num_instances), each.key) % length(local.filter_subnets_one_az)]
 }
 
 data "aws_ssm_parameter" "this" {
@@ -30,7 +26,7 @@ resource "aws_instance" "this" {
   instance_type = var.instance_type
 
   availability_zone      = var.availability_zones[index(keys(var.num_instances), each.key) % length(var.availability_zones)]
-  subnet_id              = local.subnet_ids
+  subnet_id              = var.subnet_name == "" ? var.subnet_ids[index(keys(var.num_instances), each.key) % length(var.subnet_ids)] : local.filter_subnets_one_az[index(keys(var.num_instances), each.key) % length(local.filter_subnets_one_az)]
   vpc_security_group_ids = var.vpc_security_group_ids
 
   key_name             = var.key_name
@@ -66,7 +62,7 @@ resource "aws_instance" "this" {
   }
 
   lifecycle {
-    ignore_changes = [local.ignores]
+    ignore_changes = [subnet_id, availability_zone, ami]
   }
 
   tags = merge(
