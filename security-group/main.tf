@@ -1,6 +1,6 @@
 resource "aws_security_group" "this" {
   name        = !var.use_name_prefix ? var.name : null
-  name_prefix = var.use_name_prefix ? "${ver.name}-" : null
+  name_prefix = var.use_name_prefix ? "${var.name}-" : null
   description = var.description
   vpc_id      = var.vpc_id
 
