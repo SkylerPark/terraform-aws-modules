@@ -95,7 +95,7 @@ resource "aws_ebs_volume" "this" {
   throughput        = try(each.value.throughput, null)
   kms_key_id        = try(each.value.kms_key_id, null)
   tags = merge(
-    { Name = "${eash.key}" },
+    { Name = "${each.key}" },
     var.tags,
     var.ebs_tags
   )
