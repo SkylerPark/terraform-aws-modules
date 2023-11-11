@@ -152,7 +152,7 @@ variable "create_eip" {
   default     = false
 }
 
-variable "ebs_tags" {
+variable "eip_tags" {
   description = "Additional tags for the eip"
   type        = map(string)
   default     = {}

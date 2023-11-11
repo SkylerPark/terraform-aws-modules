@@ -66,7 +66,7 @@ resource "aws_instance" "this" {
   }
 
   lifecycle {
-    ignore_changes = local.ignores
+    ignore_changes = [local.ignores]
   }
 
   tags = merge(
