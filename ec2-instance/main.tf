@@ -65,14 +65,9 @@ resource "aws_instance" "this" {
     ignore_changes = [subnet_id, availability_zone, ami]
   }
 
-  tags = merge(
-    var.tags,
-    var.instance_tags,
-    {
-      Name = "${var.name}-${each.key}"
-    }
-  )
-  volume_tags = var.volume_tags
+  tags = merge(var.tags, var.instance_tags, { Name = "${var.name}-${each.key}" })
+
+  volume_tags = var.enable_volume_tags ? merge({ Name = "${var.name}-${each.key}" }, var.volume_tags) : null
 }
 
 locals {
@@ -94,11 +89,8 @@ resource "aws_ebs_volume" "this" {
   type              = try(each.value.volume_type, null)
   throughput        = try(each.value.throughput, null)
   kms_key_id        = try(each.value.kms_key_id, null)
-  tags = merge(
-    { Name = "${each.key}" },
-    var.tags,
-    var.ebs_tags
-  )
+
+  tags = merge({ Name = "${each.key}" }, var.tags, var.ebs_tags)
 
   depends_on = [
     aws_instance.this
@@ -115,11 +107,7 @@ resource "aws_volume_attachment" "this" {
 resource "aws_eip" "this" {
   for_each = toset(var.num_instances)
   instance = aws_instance.this[each.key].id
-  tags = merge(
-    { Name = "${var.name}-${each.key}" },
-    var.tags,
-    var.eip_tags
-  )
+  tags     = merge({ Name = "${var.name}-${each.key}" }, var.tags, var.eip_tags)
 }
 
 locals {

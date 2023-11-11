@@ -50,6 +50,12 @@ variable "subnet_ids" {
   default     = []
 }
 
+variable "enable_volume_tags" {
+  description = "Whether to enable volume tags (if enabled it conflicts with root_block_device tags)"
+  type        = bool
+  default     = false
+}
+
 variable "volume_tags" {
   description = "(Optional) Map of tags to assign, at instance-creation time, to root and EBS volumes."
   type        = map(string)
