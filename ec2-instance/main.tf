@@ -29,9 +29,10 @@ resource "aws_instance" "this" {
   subnet_id              = var.subnet_name == null ? var.subnet_ids[index(var.num_instances, each.key) % length(var.subnet_ids)] : local.filter_subnets_one_az[index(var.num_instances, each.key) % length(local.filter_subnets_one_az)]
   vpc_security_group_ids = var.vpc_security_group_ids
 
-  key_name             = var.key_name
-  monitoring           = var.monitoring
-  iam_instance_profile = var.create_iam_instance_profile ? aws_iam_instance_profile.this[0].name : var.iam_instance_profile
+  key_name                = var.key_name
+  disable_api_termination = var.disable_api_termination
+  monitoring              = var.monitoring
+  iam_instance_profile    = var.create_iam_instance_profile ? aws_iam_instance_profile.this[0].name : var.iam_instance_profile
 
   associate_public_ip_address = var.associate_public_ip_address
 
@@ -71,7 +72,7 @@ resource "aws_instance" "this" {
 }
 
 locals {
-  ebs_block_device = flatten([
+  disable_api_termination = flatten([
     for num in var.num_instances : [
       for ebs in var.ebs_block_device : merge(ebs, { name = "${var.name}-${num}-${ebs.name}", instance_id = aws_instance.this[num].id, availability_zone = aws_instance.this[num].availability_zone })
     ]
