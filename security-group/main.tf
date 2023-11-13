@@ -78,3 +78,27 @@ resource "aws_vpc_security_group_egress_rule" "egress_with_cidr_ipv6" {
   ip_protocol = each.value.ip_protocol
   cidr_ipv6   = each.value.cidr_ipv6
 }
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_with_self" {
+  for_each = { for rule in var.ingress_with_self : format("%s_%s_%d_%d_%s", "ingress", rule.ip_protocol, rule.from_port, rule.to_port, aws_security_group.this.id) => rule }
+
+  security_group_id = aws_security_group.this.id
+  description       = try(each.value.description, "")
+
+  from_port                    = each.value.from_port
+  to_port                      = each.value.to_port
+  ip_protocol                  = each.value.ip_protocol
+  referenced_security_group_id = aws_security_group.this.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_with_self" {
+  for_each = { for rule in var.egress_with_self : format("%s_%s_%d_%d_%s", "egress", rule.ip_protocol, rule.from_port, rule.to_port, aws_security_group.this.id) => rule }
+
+  security_group_id = aws_security_group.this.id
+  description       = try(each.value.description, "")
+
+  from_port                    = each.value.from_port
+  to_port                      = each.value.to_port
+  ip_protocol                  = each.value.ip_protocol
+  referenced_security_group_id = aws_security_group.this.id
+}
