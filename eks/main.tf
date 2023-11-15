@@ -3,7 +3,7 @@
 ################################################################################
 
 locals {
-  cluster_name = var.cluster_name != null ? var.cluster_name : replace("${var.name}-cluster-${var.version}", ".", "-")
+  cluster_name = coalesce(var.cluster_name, replace("${var.name}-cluster-${var.version}", ".", "-"))
 }
 
 resource "aws_eks_cluster" "this" {
@@ -52,7 +52,7 @@ resource "aws_ec2_tag" "cluster_primary_security_group" {
 ################################################################################
 
 locals {
-  cluster_sg_name = var.cluster_security_group_name != null ? var.cluster_security_group_name : "${local.cluster_name}-sg"
+  cluster_sg_name = coalesce(var.cluster_security_group_name, "${local.cluster_name}-sg")
 
   cluster_security_group_rules = { for k, v in {
     ingress_nodes_443 = {
@@ -96,6 +96,66 @@ resource "aws_security_group_rule" "cluster" {
   ipv6_cidr_blocks         = lookup(each.value, "ipv6_cidr_blocks", null)
   prefix_list_ids          = lookup(each.value, "prefix_list_ids", null)
   self                     = lookup(each.value, "self", null)
-  source_security_group_id = try(each.value.source_node_security_group, false) ? local.node_security_group_id : lookup(each.value, "source_security_group_id", null)
+  source_security_group_id = try(each.value.source_node_security_group, false) ? aws_security_group.node.id : lookup(each.value, "source_security_group_id", null)
 }
 
+################################################################################
+# IRSA
+# Note - this is different from EKS identity provider
+################################################################################
+
+data "tls_certificate" "this" {
+  count = var.enable_irsa ? 1 : 0
+
+  url = aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "oidc_provider" {
+  count = var.enable_irsa ? 1 : 0
+
+  client_id_list  = distinct(compact(concat(["sts.${local.dns_suffix}"], var.openid_connect_audiences)))
+  thumbprint_list = concat([data.tls_certificate.this[0].certificates[0].sha1_fingerprint], var.custom_oidc_thumbprints)
+  url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
+
+  tags = merge(
+    { Name = "${var.cluster_name}-irsa" },
+    var.tags
+  )
+}
+
+################################################################################
+# EKS Addons
+################################################################################
+
+data "aws_eks_addon_version" "this" {
+  for_each = { for k, v in var.cluster_addons : k => v }
+
+  addon_name         = try(each.value.name, each.key)
+  kubernetes_version = coalesce(var.cluster_version, aws_eks_cluster.this.version)
+  most_recent        = try(each.value.most_recent, null)
+}
+
+resource "aws_eks_addon" "this" {
+  for_each = { for k, v in var.cluster_addons : k => v }
+
+  cluster_name = aws_eks_cluster.this.name
+  addon_name   = try(each.value.name, each.key)
+
+  addon_version            = coalesce(try(each.value.addon_version, null), data.aws_eks_addon_version.this[each.key].version)
+  configuration_values     = try(each.value.configuration_values, null)
+  preserve                 = try(each.value.preserve, null)
+  resolve_conflicts        = try(each.value.resolve_conflicts, "OVERWRITE")
+  service_account_role_arn = try(each.value.service_account_role_arn, null)
+
+  timeouts {
+    create = try(each.value.timeouts.create, var.cluster_addons_timeouts.create, null)
+    update = try(each.value.timeouts.update, var.cluster_addons_timeouts.update, null)
+    delete = try(each.value.timeouts.delete, var.cluster_addons_timeouts.delete, null)
+  }
+
+  depends_on = [
+    module.eks_managed_node_group,
+  ]
+
+  tags = var.tags
+}
