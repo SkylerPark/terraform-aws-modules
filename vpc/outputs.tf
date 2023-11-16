@@ -62,6 +62,7 @@ output "subnets" {
       cidr_block        = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].cidr_block
       availability_zone = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].availability_zone
       route_table_name  = subnet.route_table_name
+      tier              = subnet.tier
       route_table_id    = aws_route_table.this["${subnet.route_table_name}"].id
     }
   }
