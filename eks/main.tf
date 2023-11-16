@@ -1,5 +1,5 @@
 ################################################################################
-# Cluster
+# EKS Cluster
 ################################################################################
 
 locals {
@@ -8,12 +8,13 @@ locals {
 
 resource "aws_eks_cluster" "this" {
   name                      = local.cluster_name
-  role_arn                  = var.iam_role_arn
   version                   = var.cluster_version
   enabled_cluster_log_types = var.cluster_enabled_log_types
 
+  role_arn = var.iam_role_arn
+
   vpc_config {
-    security_group_ids      = compact(distinct(concat(var.cluster_additional_security_group_ids, [local.cluster_security_group_id])))
+    security_group_ids      = compact(distinct(concat(var.cluster_additional_security_group_ids, [aws_security_group_rule.cluster.id])))
     subnet_ids              = coalescelist(var.control_plane_subnet_ids, var.subnet_ids)
     endpoint_private_access = var.cluster_endpoint_private_access
     endpoint_public_access  = var.cluster_endpoint_public_access
@@ -35,6 +36,12 @@ resource "aws_eks_cluster" "this" {
     var.tags,
     var.cluster_tags,
   )
+
+  timeouts {
+    create = lookup(var.cluster_timeouts, "create", null)
+    update = lookup(var.cluster_timeouts, "update", null)
+    delete = lookup(var.cluster_timeouts, "delete", null)
+  }
 }
 
 resource "aws_ec2_tag" "cluster_primary_security_group" {
@@ -42,7 +49,7 @@ resource "aws_ec2_tag" "cluster_primary_security_group" {
     k => v if local.create && k != "Name" && var.create_cluster_primary_security_group_tags && v != null
   }
 
-  resource_id = aws_eks_cluster.this[0].vpc_config[0].cluster_security_group_id
+  resource_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
   key         = each.key
   value       = each.value
 }
@@ -63,7 +70,7 @@ locals {
       type                       = "ingress"
       source_node_security_group = true
     }
-  } : k => v if local.create_node_sg }
+  } : k => v }
 }
 
 resource "aws_security_group" "cluster" {
@@ -83,7 +90,10 @@ resource "aws_security_group" "cluster" {
 }
 
 resource "aws_security_group_rule" "cluster" {
-  for_each = { for k, v in var.cluster_security_group_additional_rules : k => v }
+  for_each = { for k, v in merge(
+    local.cluster_security_group_rules,
+    var.cluster_security_group_additional_rules
+  ) : k => v }
 
   security_group_id = aws_security_group.cluster.id
   protocol          = each.value.protocol
@@ -96,12 +106,12 @@ resource "aws_security_group_rule" "cluster" {
   ipv6_cidr_blocks         = lookup(each.value, "ipv6_cidr_blocks", null)
   prefix_list_ids          = lookup(each.value, "prefix_list_ids", null)
   self                     = lookup(each.value, "self", null)
-  source_security_group_id = try(each.value.source_node_security_group, false) ? aws_security_group.node.id : lookup(each.value, "source_security_group_id", null)
+  source_security_group_id = null
+  # source_security_group_id = try(each.value.source_node_security_group, false) ? aws_security_group.node.id : lookup(each.value, "source_security_group_id", null)
 }
 
 ################################################################################
 # IRSA
-# Note - this is different from EKS identity provider
 ################################################################################
 
 data "tls_certificate" "this" {
@@ -118,7 +128,7 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
   url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
 
   tags = merge(
-    { Name = "${var.cluster_name}-irsa" },
+    { Name = "${local.cluster_name}-irsa" },
     var.tags
   )
 }
@@ -153,9 +163,9 @@ resource "aws_eks_addon" "this" {
     delete = try(each.value.timeouts.delete, var.cluster_addons_timeouts.delete, null)
   }
 
-  depends_on = [
-    module.eks_managed_node_group,
-  ]
+  # depends_on = [
+  #   module.eks_managed_node_group,
+  # ]
 
   tags = var.tags
 }
