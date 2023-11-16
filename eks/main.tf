@@ -3,7 +3,7 @@
 ################################################################################
 
 locals {
-  cluster_name = coalesce(var.cluster_name, replace("${var.name}-cluster-${var.version}", ".", "-"))
+  cluster_name = coalesce(var.cluster_name, replace("${var.name}-cluster-${var.cluster_version}", ".", "-"))
 }
 
 resource "aws_eks_cluster" "this" {
