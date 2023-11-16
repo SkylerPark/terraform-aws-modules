@@ -1,10 +1,12 @@
+data "aws_partition" "current" {}
+locals {
+  cluster_name = coalesce(var.cluster_name, replace("${var.name}-cluster-${var.cluster_version}", ".", "-"))
+  dns_suffix   = coalesce(var.cluster_iam_role_dns_suffix, data.aws_partition.current.dns_suffix)
+}
+
 ################################################################################
 # EKS Cluster
 ################################################################################
-
-locals {
-  cluster_name = coalesce(var.cluster_name, replace("${var.name}-cluster-${var.cluster_version}", ".", "-"))
-}
 
 resource "aws_eks_cluster" "this" {
   name                      = local.cluster_name
@@ -46,7 +48,7 @@ resource "aws_eks_cluster" "this" {
 
 resource "aws_ec2_tag" "cluster_primary_security_group" {
   for_each = { for k, v in merge(var.tags, var.cluster_tags) :
-    k => v if local.create && k != "Name" && var.create_cluster_primary_security_group_tags && v != null
+    k => v if k != "Name" && var.create_cluster_primary_security_group_tags && v != null
   }
 
   resource_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id

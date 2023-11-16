@@ -138,6 +138,11 @@ variable "iam_role_arn" {
   default     = null
 }
 
+variable "cluster_iam_role_dns_suffix" {
+  description = "Base DNS domain name for the current partition (e.g., amazonaws.com in AWS Commercial, amazonaws.com.cn in AWS China)"
+  type        = string
+  default     = null
+}
 
 ################################################################################
 # IRSA
