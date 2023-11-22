@@ -17,6 +17,11 @@ output "vpc_cidr_block" {
   value       = try(aws_vpc.this[0].cidr_block, null)
 }
 
+output "vpc_secondary_cidr_blocks" {
+  description = "List of secondary CIDR blocks of the VPC"
+  value       = compact(aws_vpc_ipv4_cidr_block_association.this[*].cidr_block)
+}
+
 ################################################################################
 # Internet Gateway
 ################################################################################

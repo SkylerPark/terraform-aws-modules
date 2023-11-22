@@ -21,6 +21,14 @@ resource "aws_vpc" "this" {
   )
 }
 
+resource "aws_vpc_ipv4_cidr_block_association" "this" {
+  count  = length(var.secondary_cidr_blocks)
+  vpc_id = local.vpc_id
+
+  cidr_block = element(var.secondary_cidr_blocks, count.index)
+}
+
+
 resource "aws_subnet" "this" {
   for_each = { for subnet in var.subnets : "${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}" => subnet }
 
