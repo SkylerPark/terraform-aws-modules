@@ -4,7 +4,7 @@ data "aws_ami" "eks_default" {
 
   filter {
     name   = "name"
-    values = ["amazon-eks-node-${local.cluster_version}-v*"]
+    values = ["amazon-eks-node-${var.cluster_version}-v*"]
   }
 }
 
@@ -14,7 +14,7 @@ data "aws_ami" "eks_default_arm" {
 
   filter {
     name   = "name"
-    values = ["amazon-eks-arm64-node-${local.cluster_version}-v*"]
+    values = ["amazon-eks-arm64-node-${var.cluster_version}-v*"]
   }
 }
 
