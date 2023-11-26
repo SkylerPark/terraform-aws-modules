@@ -165,9 +165,9 @@ resource "aws_eks_addon" "this" {
     delete = try(each.value.timeouts.delete, var.cluster_addons_timeouts.delete, null)
   }
 
-  # depends_on = [
-  #   module.eks_managed_node_group,
-  # ]
+  depends_on = [
+    module.eks_managed_node_group,
+  ]
 
   tags = var.tags
 }
