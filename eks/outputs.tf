@@ -77,7 +77,8 @@ output "cluster_tls_certificate_sha1_fingerprint" {
 
 output "cluster_addons" {
   description = "Map of attribute maps for all EKS cluster addons enabled"
-  value       = merge(aws_eks_addon.this, aws_eks_addon.before_compute)
+  # value       = merge(aws_eks_addon.this, aws_eks_addon.before_compute)
+  value = aws_eks_addon.this
 }
 
 ################################################################################
