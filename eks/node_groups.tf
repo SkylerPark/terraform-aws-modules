@@ -11,7 +11,6 @@ locals {
   }
 }
 
-
 resource "time_sleep" "this" {
   create_duration = var.dataplane_wait_duration
 
@@ -42,7 +41,7 @@ module "eks_managed_node_group" {
   max_size     = try(each.value.max_size, var.eks_managed_node_group_defaults.max_size, 3)
   desired_size = try(each.value.desired_size, var.eks_managed_node_group_defaults.desired_size, 1)
 
-  ami_id              = try(each.value.ami_id, var.eks_managed_node_group_defaults.ami_id, "")
+  ami_id              = try(each.value.ami_id, each.value.ami_type == "AL2_ARM_64" ? data.aws_ami.eks_default_arm.image_id : data.aws_ami.eks_default.image_id)
   ami_type            = try(each.value.ami_type, var.eks_managed_node_group_defaults.ami_type, null)
   ami_release_version = try(each.value.ami_release_version, var.eks_managed_node_group_defaults.ami_release_version, null)
 

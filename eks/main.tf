@@ -57,62 +57,6 @@ resource "aws_ec2_tag" "cluster_primary_security_group" {
 }
 
 ################################################################################
-# Cluster Security Group
-################################################################################
-
-# locals {
-#   cluster_sg_name = coalesce(var.cluster_security_group_name, "${local.cluster_name}-sg")
-
-#   cluster_security_group_rules = { for k, v in {
-#     ingress_nodes_443 = {
-#       description                = "Node groups to cluster API"
-#       protocol                   = "tcp"
-#       from_port                  = 443
-#       to_port                    = 443
-#       type                       = "ingress"
-#       source_node_security_group = true
-#     }
-#   } : k => v }
-# }
-
-# resource "aws_security_group" "cluster" {
-#   name        = local.cluster_sg_name
-#   description = var.cluster_security_group_description
-#   vpc_id      = var.vpc_id
-
-#   tags = merge(
-#     var.tags,
-#     { "Name" = local.cluster_sg_name },
-#     var.cluster_security_group_tags
-#   )
-
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
-
-# resource "aws_security_group_rule" "cluster" {
-#   for_each = { for k, v in merge(
-#     local.cluster_security_group_rules,
-#     var.cluster_security_group_additional_rules
-#   ) : k => v }
-
-#   security_group_id = aws_security_group.cluster.id
-#   protocol          = each.value.protocol
-#   from_port         = each.value.from_port
-#   to_port           = each.value.to_port
-#   type              = each.value.type
-
-#   description              = lookup(each.value, "description", null)
-#   cidr_blocks              = lookup(each.value, "cidr_blocks", null)
-#   ipv6_cidr_blocks         = lookup(each.value, "ipv6_cidr_blocks", null)
-#   prefix_list_ids          = lookup(each.value, "prefix_list_ids", null)
-#   self                     = lookup(each.value, "self", null)
-#   source_security_group_id = null
-#   # source_security_group_id = try(each.value.source_node_security_group, false) ? aws_security_group.node.id : lookup(each.value, "source_security_group_id", null)
-# }
-
-################################################################################
 # IRSA
 ################################################################################
 
