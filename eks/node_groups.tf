@@ -1,3 +1,17 @@
+locals {
+  metadata_options = {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+  }
+
+  # EKS managed node group
+  default_update_config = {
+    max_unavailable_percentage = 33
+  }
+}
+
+
 resource "time_sleep" "this" {
   create_duration = var.dataplane_wait_duration
 

@@ -84,10 +84,10 @@ output "cluster_addons" {
 # EKS Identity Provider
 ################################################################################
 
-output "cluster_identity_providers" {
-  description = "Map of attribute maps for all EKS identity providers enabled"
-  value       = aws_eks_identity_provider_config.this
-}
+# output "cluster_identity_providers" {
+#   description = "Map of attribute maps for all EKS identity providers enabled"
+#   value       = aws_eks_identity_provider_config.this
+# }
 
 ################################################################################
 # CloudWatch Log Group
