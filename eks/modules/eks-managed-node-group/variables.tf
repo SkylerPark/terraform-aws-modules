@@ -56,12 +56,6 @@ variable "bootstrap_extra_args" {
   default     = ""
 }
 
-variable "user_data_template_path" {
-  description = "Path to a local, custom user data template file to use when rendering user data"
-  type        = string
-  default     = ""
-}
-
 ################################################################################
 # Launch template
 ################################################################################
