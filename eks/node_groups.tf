@@ -17,8 +17,8 @@ resource "time_sleep" "this" {
 module "eks_managed_node_group" {
   source          = "./modules/eks-managed-node-group"
   for_each        = var.eks_managed_node_groups
-  cluster_name    = time_sleep.this[0].triggers["cluster_name"]
-  cluster_version = time_sleep.this[0].triggers["cluster_version"]
+  cluster_name    = time_sleep.this.triggers["cluster_name"]
+  cluster_version = time_sleep.this.triggers["cluster_version"]
 
   # EKS Managed Node Group
   name       = try(each.value.name, each.key)
@@ -44,8 +44,8 @@ module "eks_managed_node_group" {
   timeouts      = try(each.value.timeouts, var.eks_managed_node_group_defaults.timeouts, {})
 
   # User Data
-  cluster_endpoint           = try(time_sleep.this[0].triggers["cluster_endpoint"], "")
-  cluster_auth_base64        = try(time_sleep.this[0].triggers["cluster_certificate_authority_data"], "")
+  cluster_endpoint           = try(time_sleep.this.triggers["cluster_endpoint"], "")
+  cluster_auth_base64        = try(time_sleep.this.triggers["cluster_certificate_authority_data"], "")
   cluster_service_ipv4_cidr  = var.cluster_service_ipv4_cidr
   enable_bootstrap_user_data = try(each.value.enable_bootstrap_user_data, var.eks_managed_node_group_defaults.enable_bootstrap_user_data, false)
   pre_bootstrap_user_data    = try(each.value.pre_bootstrap_user_data, var.eks_managed_node_group_defaults.pre_bootstrap_user_data, "")
@@ -95,7 +95,7 @@ module "eks_managed_node_group" {
 
   # Security group
   vpc_security_group_ids            = try(each.value.vpc_security_group_ids, var.eks_managed_node_group_defaults.vpc_security_group_ids, [])
-  cluster_primary_security_group_id = aws_eks_cluster.this[0].vpc_config[0].cluster_security_group_id
+  cluster_primary_security_group_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
 
   tags = merge(var.tags, try(each.value.tags, var.eks_managed_node_group_defaults.tags, {}))
 }
