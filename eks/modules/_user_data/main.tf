@@ -1,6 +1,6 @@
 locals {
   int_linux_default_user_data = var.enable_bootstrap_user_data ? base64encode(templatefile(
-    coalesce(var.user_data_template_path, "${path.module}/../../templates/linux_user_data.tpl"),
+    "${path.module}/../../templates/linux_user_data.tpl",
     {
       enable_bootstrap_user_data = var.enable_bootstrap_user_data
       cluster_name               = var.cluster_name
