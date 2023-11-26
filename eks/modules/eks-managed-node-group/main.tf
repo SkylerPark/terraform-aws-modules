@@ -26,6 +26,7 @@ module "user_data" {
 
 locals {
   launch_template_name = coalesce(var.launch_template_name, "${var.name}-eks-node-group")
+  security_group_ids   = compact(concat([var.cluster_primary_security_group_id], var.vpc_security_group_ids))
 }
 
 resource "aws_launch_template" "this" {
