@@ -174,6 +174,6 @@ resource "kubernetes_config_map_v1_data" "this" {
 
   depends_on = [
     # Required for instances where the configmap does not exist yet to avoid race condition
-    kubernetes_config_map.aws_auth,
+    kubernetes_config_map.this,
   ]
 }
