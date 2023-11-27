@@ -1,4 +1,5 @@
 data "aws_partition" "current" {}
+
 locals {
   cluster_name = coalesce(var.cluster_name, replace("${var.name}-cluster-${var.cluster_version}", ".", "-"))
   dns_suffix   = coalesce(var.cluster_iam_role_dns_suffix, data.aws_partition.current.dns_suffix)
@@ -114,4 +115,47 @@ resource "aws_eks_addon" "this" {
   ]
 
   tags = var.tags
+}
+
+locals {
+  node_iam_role_arns_non_windows = distinct(
+    compact(
+      concat(
+        [for group in module.eks_managed_node_group : group.iam_role_arn],
+        var.aws_auth_node_iam_role_arns_non_windows,
+      )
+    )
+  )
+
+  aws_auth_configmap_data = {
+    mapRoles = yamlencode(concat(
+      [for role_arn in local.node_iam_role_arns_non_windows : {
+        rolearn  = role_arn
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups = [
+          "system:bootstrappers",
+          "system:nodes",
+        ]
+        }
+      ],
+      var.aws_auth_roles
+    ))
+    mapUsers    = yamlencode(var.aws_auth_users)
+    mapAccounts = yamlencode(var.aws_auth_accounts)
+  }
+}
+
+resource "kubernetes_config_map" "this" {
+  count = var.create_aws_auth_configmap ? 1 : 0
+
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = local.aws_auth_configmap_data
+
+  lifecycle {
+    ignore_changes = [data, metadata[0].labels, metadata[0].annotations]
+  }
 }

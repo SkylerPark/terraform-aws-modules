@@ -69,3 +69,12 @@ output "node_group_taints" {
 #   description = "ARNs of autoscaling group schedules"
 #   value       = { for k, v in aws_autoscaling_schedule.this : k => v.arn }
 # }
+
+################################################################################
+# IAM Role
+################################################################################
+
+output "iam_role_arn" {
+  description = "The Amazon Resource Name (ARN) specifying the IAM role"
+  value       = var.iam_role_arn
+}
