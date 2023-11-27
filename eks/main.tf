@@ -159,3 +159,21 @@ resource "kubernetes_config_map" "this" {
     ignore_changes = [data, metadata[0].labels, metadata[0].annotations]
   }
 }
+
+resource "kubernetes_config_map_v1_data" "this" {
+  count = var.manage_aws_auth_configmap ? 1 : 0
+
+  force = true
+
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = local.aws_auth_configmap_data
+
+  depends_on = [
+    # Required for instances where the configmap does not exist yet to avoid race condition
+    kubernetes_config_map.aws_auth,
+  ]
+}
