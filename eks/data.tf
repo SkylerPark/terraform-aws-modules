@@ -18,3 +18,7 @@ data "aws_ami" "eks_default_arm" {
   }
 }
 
+data "aws_eks_cluster" "this" {
+  name = aws_eks_cluster.this.name
+}
+
