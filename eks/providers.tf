@@ -5,6 +5,6 @@ provider "kubernetes" {
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
     command     = "aws"
-    args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.this.name]
+    args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.this.name, "--profile", "moham-manage", "--role-arn", "arn:aws:iam::497712261737:role/moham-iac-role"]
   }
 }
