@@ -183,5 +183,5 @@ module "eks_cni_custom_network" {
   count                             = var.enable_secondary_subnet ? 1 : 0
   secondary_subnets                 = var.secondary_subnets
   cluster_primary_security_group_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
-  depends_on                        = [aws_eks_addon.this]
+  depends_on                        = [aws_eks_cluster.this]
 }
