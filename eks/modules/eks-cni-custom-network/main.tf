@@ -4,8 +4,7 @@ resource "kubectl_manifest" "this" {
   apiVersion: crd.k8s.amazonaws.com/v1alpha1
   kind: ENIConfig
   metadata: 
-    name: ${each.key}
-    namespace: default
+    name: ${each.value.availability_zone}
   spec: 
     securityGroups: 
       - ${var.cluster_primary_security_group_id}
