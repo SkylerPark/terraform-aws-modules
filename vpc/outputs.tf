@@ -72,3 +72,15 @@ output "subnets" {
     }
   }
 }
+
+output "secondary_subnets" {
+  description = "The Info of the Secondary Subnet All Resource"
+  value = {
+    for subnet in var.secondary_subnets : "${subnet.name}-${subnet.tier}-subnet-${subnet.availability_zone}" => {
+      id                = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].id
+      cidr_block        = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].cidr_block
+      availability_zone = aws_subnet.this["${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}"].availability_zone
+      tier              = subnet.tier
+    }
+  }
+}

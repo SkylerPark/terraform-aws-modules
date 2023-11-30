@@ -84,6 +84,12 @@ variable "subnet_tags" {
   default     = {}
 }
 
+variable "secondary_subnets" {
+  description = "Secondary Subnet List"
+  type        = list(any)
+  default     = []
+}
+
 ################################################################################
 # Internet Gateway
 ################################################################################

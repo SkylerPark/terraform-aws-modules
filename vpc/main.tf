@@ -28,6 +28,19 @@ resource "aws_vpc_ipv4_cidr_block_association" "this" {
   cidr_block = element(var.secondary_cidr_blocks, count.index)
 }
 
+resource "aws_subnet" "secondary_subnets" {
+  for_each = { for subnet in var.secondary_subnets : "${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}" => subnet }
+
+  vpc_id            = aws_vpc_ipv4_cidr_block_association.this[0].vpc_id
+  availability_zone = each.value.availability_zone
+  cidr_block        = each.value.cidr_block
+
+  tags = merge(
+    { "Name" = "${each.value.name}-${each.value.tier}-subnet-${each.value.availability_zone}", "Tier" = "${each.value.tier}" },
+    var.tags,
+    var.secondary_subnet_tags
+  )
+}
 
 resource "aws_subnet" "this" {
   for_each = { for subnet in var.subnets : "${subnet.name}-${subnet.tier}/${subnet.availability_zone}/${subnet.cidr_block}" => subnet }
