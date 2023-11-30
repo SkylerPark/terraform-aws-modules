@@ -90,6 +90,13 @@ variable "secondary_subnets" {
   default     = []
 }
 
+variable "secondary_subnet_tags" {
+  description = "Additional tags for the Secondary Subnet"
+  type        = map(string)
+  default     = {}
+}
+
+
 ################################################################################
 # Internet Gateway
 ################################################################################
