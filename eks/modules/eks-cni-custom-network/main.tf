@@ -1,5 +1,5 @@
 resource "kubectl_manifest" "this" {
-  for_each  = { for subnet in var.var.secondary_subnets : subnet.availability_zone => subnet }
+  for_each  = { for subnet in var.secondary_subnets : subnet.availability_zone => subnet }
   yaml_body = <<-YAML
   apiVersion: crd.k8s.amazonaws.com/v1alpha1
   kind: ENIConfig
