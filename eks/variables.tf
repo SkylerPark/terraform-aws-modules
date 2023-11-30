@@ -256,3 +256,19 @@ variable "aws_auth_accounts" {
   type        = list(any)
   default     = []
 }
+
+################################################################################
+# eks CNI Custom network
+################################################################################
+
+variable "enable_secondary_subnet" {
+  description = "EKS CNI Custom Network enable secondary Subnet"
+  type        = bool
+  default     = false
+}
+
+variable "secondary_subnets" {
+  description = "Map of Secondary Subnets"
+  type        = any
+  default     = {}
+}
