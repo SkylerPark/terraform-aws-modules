@@ -111,4 +111,6 @@ module "eks_managed_node_group" {
   cluster_primary_security_group_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
 
   tags = merge(var.tags, try(each.value.tags, var.eks_managed_node_group_defaults.tags, {}))
+
+  depends_on = [module.eks_cni_custom_network]
 }
