@@ -180,9 +180,9 @@ resource "kubernetes_config_map_v1_data" "this" {
 }
 
 module "eks_cni_custom_network" {
-  count                             = var.enable_secondary_subnet ? 1 : 0
-  source                            = "./modules/eks-cni-custom-network"
-  secondary_subnets                 = var.secondary_subnets
-  cluster_primary_security_group_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
-  depends_on                        = [aws_eks_cluster.this]
+  count             = var.enable_secondary_subnet ? 1 : 0
+  source            = "./modules/eks-cni-custom-network"
+  secondary_subnets = var.secondary_subnets
+  security_group_id = var.eks_managed_node_group_defaults.vpc_security_group_ids
+  depends_on        = [aws_eks_cluster.this]
 }

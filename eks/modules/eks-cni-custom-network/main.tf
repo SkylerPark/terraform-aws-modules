@@ -7,7 +7,7 @@ resource "kubectl_manifest" "this" {
     name: ${each.value.availability_zone}
   spec: 
     securityGroups: 
-      - ${var.cluster_primary_security_group_id}
+      - ${var.security_group_id}
     subnet: ${each.value.id}
   YAML
 }
