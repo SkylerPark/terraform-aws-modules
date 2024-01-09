@@ -272,3 +272,19 @@ variable "secondary_subnets" {
   type        = any
   default     = {}
 }
+
+################################################################################
+# ALB Ingress Controller
+################################################################################
+
+variable "enable_alb_ingress_controller" {
+  description = "EKS ALB Ingress Controller enable"
+  type        = bool
+  default     = false
+}
+
+variable "alb_controller_role_arn" {
+  description = "IAM role ARN for the ALB Ingress Controller."
+  type        = string
+  default     = null
+}
