@@ -186,3 +186,14 @@ module "eks_cni_custom_network" {
   security_group_id = var.eks_managed_node_group_defaults.vpc_security_group_ids
   depends_on        = [aws_eks_cluster.this]
 }
+
+module "load_balancer_controller" {
+  count              = var.enable_load_balancer_controller ? 1 : 0
+  source             = "./modules/load-balancer-controller"
+  vpc_id             = var.vpc_id
+  openid_connect_arn = aws_iam_openid_connect_provider.oidc_provider.0.arn
+  openid_connect_url = aws_iam_openid_connect_provider.oidc_provider.0.url
+  cluster_name       = local.cluster_name
+  region             = var.region
+  depends_on         = [module.eks_managed_node_group]
+}

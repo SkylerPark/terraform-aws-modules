@@ -16,6 +16,12 @@ variable "dataplane_wait_duration" {
   default     = "30s"
 }
 
+variable "region" {
+  description = "eks cluster region"
+  type        = string
+  default     = null
+}
+
 ################################################################################
 # EKS Cluster
 ################################################################################
@@ -277,14 +283,8 @@ variable "secondary_subnets" {
 # ALB Ingress Controller
 ################################################################################
 
-variable "enable_alb_ingress_controller" {
+variable "enable_load_balancer_controller" {
   description = "EKS ALB Ingress Controller enable"
   type        = bool
   default     = false
-}
-
-variable "alb_controller_role_arn" {
-  description = "IAM role ARN for the ALB Ingress Controller."
-  type        = string
-  default     = null
 }
