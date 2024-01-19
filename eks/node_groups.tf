@@ -24,7 +24,7 @@ resource "time_sleep" "this" {
 }
 
 ################################################################################
-# Node Security Group
+# EKS Managed Node Group
 ################################################################################
 
 module "eks_managed_node_group" {
@@ -111,4 +111,22 @@ module "eks_managed_node_group" {
   cluster_primary_security_group_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
 
   tags = merge(var.tags, try(each.value.tags, var.eks_managed_node_group_defaults.tags, {}))
+}
+
+################################################################################
+# Fargate Profile
+################################################################################
+module "fargate_profile" {
+  source   = "./modules/fargate-profile"
+  for_each = var.fargate_profiles
+
+  # Fargate Profile
+  cluster_name = time_sleep.this.triggers["cluster_name"]
+  name         = try(each.value.name, each.key)
+  subnet_ids   = try(each.value.subnet_ids, var.fargate_profile_defaults.subnet_ids, var.subnet_ids)
+  selectors    = try(each.value.selectors, var.fargate_profile_defaults.selectors, [])
+  iam_role_arn = try(each.value.iam_role_arn, var.fargate_profile_defaults.iam_role_arn, null)
+  timeouts     = try(each.value.timeouts, var.fargate_profile_defaults.timeouts, {})
+
+  tags = merge(var.tags, try(each.value.tags, var.fargate_profile_defaults.tags, {}))
 }

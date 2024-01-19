@@ -279,6 +279,12 @@ variable "secondary_subnets" {
   default     = {}
 }
 
+variable "secondary_security_group_id" {
+  description = "String, externally created security group ID to attach to the secondary eni"
+  type        = string
+  default     = null
+}
+
 ################################################################################
 # ALB Ingress Controller
 ################################################################################
@@ -287,4 +293,20 @@ variable "enable_load_balancer_controller" {
   description = "EKS ALB Ingress Controller enable"
   type        = bool
   default     = false
+}
+
+################################################################################
+# Fargate
+################################################################################
+
+variable "fargate_profiles" {
+  description = "Map of Fargate Profile definitions to create"
+  type        = any
+  default     = {}
+}
+
+variable "fargate_profile_defaults" {
+  description = "Map of Fargate Profile default configurations"
+  type        = any
+  default     = {}
 }
