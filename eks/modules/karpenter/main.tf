@@ -119,12 +119,26 @@ resource "kubectl_manifest" "provisioner" {
       - key: karpenter.k8s.aws/instance-family
         operator: In
         values: [c5, m5, r5]
-      # Exclude small instance sizes
       - key: karpenter.k8s.aws/instance-size
         operator: NotIn
         values: [nano, micro, small, large]
+      - key: "topology.kubernetes.io/zone"
+        operator: In
+        values: [ "ap-northeast-2a", "ap-northeast-2c" ]
+      - key: "karpenter.sh/capacity-type"
+        operator: In
+        values: ["on-demand"]
+      - key: kubernetes.io/os
+        operator: In
+        values:
+          - linux
+      - key: kubernetes.io/arch
+        operator: In
+        values:
+          - amd64
     providerRef:
       name: default
+    ttlSecondsAfterEmpty: 30
   YAML
   depends_on = [
     helm_release.this
@@ -142,6 +156,17 @@ resource "kubectl_manifest" "aws_node_template" {
       karpenter.sh/discovery: "${var.cluster_name}"
     securityGroupSelector:
       karpenter.sh/discovery: "${var.cluster_name}"
+    amiFamily: AL2
+    blockDeviceMappings:
+      - deviceName: /dev/xvda
+        ebs:
+          volumeSize: 50G
+          volumeType: gp3
+          iops: 3000
+          throughput: 125
+          deleteOnTermination: true
+    tags:
+      Name: "${var.cluster_name}-node"
   YAML
   depends_on = [
     kubectl_manifest.provisioner
