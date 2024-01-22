@@ -128,6 +128,15 @@ locals {
     )
   )
 
+  fargate_profile_pod_execution_role_arns = distinct(
+    compact(
+      concat(
+        [for group in module.fargate_profile : group.fargate_profile_pod_execution_role_arn],
+        var.aws_auth_fargate_profile_pod_execution_role_arns,
+      )
+    )
+  )
+
   aws_auth_configmap_data = {
     mapRoles = yamlencode(concat(
       [for role_arn in local.node_iam_role_arns_non_windows : {
@@ -136,6 +145,16 @@ locals {
         groups = [
           "system:bootstrappers",
           "system:nodes",
+        ]
+        }
+      ],
+      [for role_arn in local.fargate_profile_pod_execution_role_arns : {
+        rolearn  = role_arn
+        username = "system:node:{{SessionName}}"
+        groups = [
+          "system:bootstrappers",
+          "system:nodes",
+          "system:node-proxier",
         ]
         }
       ],
@@ -196,4 +215,14 @@ module "load_balancer_controller" {
   cluster_name       = local.cluster_name
   region             = var.region
   depends_on         = [module.eks_managed_node_group]
+}
+
+module "karpenter" {
+  count              = var.enable_karpenter ? 1 : 0
+  source             = "./modules/karpenter"
+  openid_connect_arn = aws_iam_openid_connect_provider.oidc_provider.0.arn
+  openid_connect_url = aws_iam_openid_connect_provider.oidc_provider.0.url
+  cluster_name       = local.cluster_name
+  cluster_endpoint   = aws_eks_cluster.this.endpoint
+  karpenter_profile  = var.karpenter_profile
 }

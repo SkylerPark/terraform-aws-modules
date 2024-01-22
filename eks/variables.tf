@@ -310,3 +310,25 @@ variable "fargate_profile_defaults" {
   type        = any
   default     = {}
 }
+
+variable "aws_auth_fargate_profile_pod_execution_role_arns" {
+  description = "List of Fargate profile pod execution role ARNs to add to the aws-auth configmap"
+  type        = list(string)
+  default     = []
+}
+
+################################################################################
+# kerpenter
+################################################################################
+
+variable "enable_karpenter" {
+  description = "EKS Karpenter enable"
+  type        = bool
+  default     = false
+}
+
+variable "karpenter_profile" {
+  description = "EKS karpenter profile"
+  type        = string
+  default     = null
+}
