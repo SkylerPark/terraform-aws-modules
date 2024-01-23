@@ -63,3 +63,9 @@ variable "karpenter_profile" {
   type        = string
   default     = null
 }
+
+variable "karpenter_provisioner_requirements" {
+  description = "karpenter provisioner requirements config"
+  type        = any
+  default     = {}
+}

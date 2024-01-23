@@ -332,3 +332,9 @@ variable "karpenter_profile" {
   type        = string
   default     = null
 }
+
+variable "karpenter_defaults" {
+  description = "Map of Karpenter default configurations"
+  type        = any
+  default     = {}
+}

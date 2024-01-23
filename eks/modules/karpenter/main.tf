@@ -108,38 +108,12 @@ resource "helm_release" "this" {
 }
 
 resource "kubectl_manifest" "provisioner" {
-  yaml_body = <<-YAML
-  apiVersion: karpenter.sh/v1alpha5
-  kind: Provisioner
-  metadata:
-    name: default
-  spec:
-    requirements:
-      # Include general purpose instance families
-      - key: karpenter.k8s.aws/instance-family
-        operator: In
-        values: [c5, m5, r5]
-      - key: karpenter.k8s.aws/instance-size
-        operator: NotIn
-        values: [nano, micro, small, large]
-      - key: "topology.kubernetes.io/zone"
-        operator: In
-        values: [ "ap-northeast-2a", "ap-northeast-2c" ]
-      - key: "karpenter.sh/capacity-type"
-        operator: In
-        values: ["on-demand"]
-      - key: kubernetes.io/os
-        operator: In
-        values:
-          - linux
-      - key: kubernetes.io/arch
-        operator: In
-        values:
-          - amd64
-    providerRef:
-      name: default
-    ttlSecondsAfterEmpty: 30
-  YAML
+  yaml_body = templatefile(
+    "${path.module}/karpenter-provisioner.yaml.tmpl",
+    {
+      requirements = var.karpenter_provisioner_requirements
+    }
+  )
   depends_on = [
     helm_release.this
   ]
@@ -160,7 +134,7 @@ resource "kubectl_manifest" "aws_node_template" {
     blockDeviceMappings:
       - deviceName: /dev/xvda
         ebs:
-          volumeSize: 50G
+          volumeSize: 100G
           volumeType: gp3
           iops: 3000
           throughput: 125

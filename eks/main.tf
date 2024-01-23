@@ -218,11 +218,12 @@ module "load_balancer_controller" {
 }
 
 module "karpenter" {
-  count              = var.enable_karpenter ? 1 : 0
-  source             = "./modules/karpenter"
-  openid_connect_arn = aws_iam_openid_connect_provider.oidc_provider.0.arn
-  openid_connect_url = aws_iam_openid_connect_provider.oidc_provider.0.url
-  cluster_name       = local.cluster_name
-  cluster_endpoint   = aws_eks_cluster.this.endpoint
-  karpenter_profile  = var.karpenter_profile
+  count                              = var.enable_karpenter ? 1 : 0
+  source                             = "./modules/karpenter"
+  openid_connect_arn                 = aws_iam_openid_connect_provider.oidc_provider.0.arn
+  openid_connect_url                 = aws_iam_openid_connect_provider.oidc_provider.0.url
+  cluster_name                       = local.cluster_name
+  cluster_endpoint                   = aws_eks_cluster.this.endpoint
+  karpenter_profile                  = var.karpenter_profile
+  karpenter_provisioner_requirements = try(var.karpenter_defaults.provisioner_requirements, {})
 }

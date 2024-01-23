@@ -1,0 +1,18 @@
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: default
+spec:
+  requirements:
+  %{ for k, v in requirements }
+    - key: ${k}
+      operator: ${v.operator}
+      values: ${jsonencode(v.values)}
+  %{ endfor }
+  providerRef:
+    name: default
+  consolidation:
+    enabled: false
+  kubeletConfiguration:
+    maxPods: 100
+  ttlSecondsAfterEmpty: 30
