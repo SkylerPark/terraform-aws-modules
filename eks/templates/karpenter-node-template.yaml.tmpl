@@ -1,0 +1,20 @@
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  name: default
+spec:
+  subnetSelector:
+    karpenter.sh/discovery: ${subnet_selector}
+  securityGroupSelector:
+    karpenter.sh/discovery: ${security_group_selector}
+  amiFamily : ${ami_family}
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: ${volume_size}
+        volumeType: ${volume_type}
+        iops: ${volume_iops}
+        throughput: ${volume_throughput}
+        deleteOnTermination: ${volume_delete_on_termination}
+  tags:
+    Name: ${karpenter_node_name}

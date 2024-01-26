@@ -286,16 +286,6 @@ variable "secondary_security_group_id" {
 }
 
 ################################################################################
-# ALB Ingress Controller
-################################################################################
-
-variable "enable_load_balancer_controller" {
-  description = "EKS ALB Ingress Controller enable"
-  type        = bool
-  default     = false
-}
-
-################################################################################
 # Fargate
 ################################################################################
 
@@ -327,14 +317,56 @@ variable "enable_karpenter" {
   default     = false
 }
 
-variable "karpenter_profile" {
-  description = "EKS karpenter profile"
-  type        = string
-  default     = null
+variable "karpenter" {
+  description = "Karpenter add-on configuration values"
+  type        = any
+  default     = {}
 }
 
-variable "karpenter_defaults" {
-  description = "Map of Karpenter default configurations"
+################################################################################
+# ArgoCD
+################################################################################
+
+variable "enable_argocd" {
+  description = "Enable Argo CD Kubernetes add-on"
+  type        = bool
+  default     = false
+}
+
+variable "argocd" {
+  description = "ArgoCD add-on configuration values"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# Argo Rollouts
+################################################################################
+
+variable "enable_argo_rollouts" {
+  description = "Enable Argo Rollouts add-on"
+  type        = bool
+  default     = false
+}
+
+variable "argo_rollouts" {
+  description = "Argo Rollouts add-on configuration values"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# AWS Load Balancer Controller
+################################################################################
+
+variable "enable_aws_load_balancer_controller" {
+  description = "Enable AWS Load Balancer Controller add-on"
+  type        = bool
+  default     = false
+}
+
+variable "aws_load_balancer_controller" {
+  description = "AWS Load Balancer Controller add-on configuration values"
   type        = any
   default     = {}
 }

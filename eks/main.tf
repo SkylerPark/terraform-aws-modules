@@ -1,5 +1,3 @@
-data "aws_partition" "current" {}
-
 locals {
   cluster_name = coalesce(var.cluster_name, replace("${var.name}-cluster-${var.cluster_version}", ".", "-"))
   dns_suffix   = coalesce(var.cluster_iam_role_dns_suffix, data.aws_partition.current.dns_suffix)
@@ -204,26 +202,4 @@ module "eks_cni_custom_network" {
   secondary_subnets = var.secondary_subnets
   security_group_id = var.secondary_security_group_id
   depends_on        = [aws_eks_cluster.this]
-}
-
-module "load_balancer_controller" {
-  count              = var.enable_load_balancer_controller ? 1 : 0
-  source             = "./modules/load-balancer-controller"
-  vpc_id             = var.vpc_id
-  openid_connect_arn = aws_iam_openid_connect_provider.oidc_provider.0.arn
-  openid_connect_url = aws_iam_openid_connect_provider.oidc_provider.0.url
-  cluster_name       = local.cluster_name
-  region             = var.region
-  depends_on         = [module.eks_managed_node_group]
-}
-
-module "karpenter" {
-  count                              = var.enable_karpenter ? 1 : 0
-  source                             = "./modules/karpenter"
-  openid_connect_arn                 = aws_iam_openid_connect_provider.oidc_provider.0.arn
-  openid_connect_url                 = aws_iam_openid_connect_provider.oidc_provider.0.url
-  cluster_name                       = local.cluster_name
-  cluster_endpoint                   = aws_eks_cluster.this.endpoint
-  karpenter_profile                  = var.karpenter_profile
-  karpenter_provisioner_requirements = try(var.karpenter_defaults.provisioner_requirements, {})
 }
