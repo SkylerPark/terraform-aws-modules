@@ -10,4 +10,8 @@ resource "kubectl_manifest" "this" {
       - ${var.security_group_id}
     subnet: ${each.value.id}
   YAML
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = true
+  }
 }

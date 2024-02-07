@@ -55,6 +55,16 @@ resource "aws_ec2_tag" "cluster_primary_security_group" {
   value       = each.value
 }
 
+resource "aws_security_group_rule" "cluster" {
+  count                    = var.enable_secondary_subnet ? 1 : 0
+  security_group_id        = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+  type                     = "ingress"
+  to_port                  = 0
+  from_port                = 0
+  protocol                 = "-1"
+  source_security_group_id = var.secondary_security_group_id
+}
+
 ################################################################################
 # IRSA
 ################################################################################
@@ -90,6 +100,65 @@ data "aws_eks_addon_version" "this" {
   most_recent        = try(each.value.most_recent, null)
 }
 
+locals {
+  enable_aws_ebs_csi_driver = contains(keys(var.cluster_addons), "aws-ebs-csi-driver")
+}
+
+data "aws_iam_policy_document" "ebs_csi_driver" {
+  count = local.enable_aws_ebs_csi_driver ? 1 : 0
+
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.oidc_provider[0].arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace("${aws_iam_openid_connect_provider.oidc_provider[0].arn}", "/^(.*provider/)/", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:ebs-csi-*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace("${aws_iam_openid_connect_provider.oidc_provider[0].arn}", "/^(.*provider/)/", "")}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+locals {
+  ebs_csi_driver_role_name            = try(var.aws_ebs_csi_driver.role_name, "AmazonEBSCSIDriverRole")
+  ebs_csi_driver_role_name_use_prefix = try(var.aws_ebs_csi_driver.role_name_use_prefix, true)
+  ebs_csi_driver_policy_arns          = concat(["arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"], try(var.aws_ebs_csi_driver.policy_arns, []))
+}
+
+resource "aws_iam_role" "ebs_csi_driver" {
+  count = local.enable_aws_ebs_csi_driver ? 1 : 0
+
+  name        = local.ebs_csi_driver_role_name_use_prefix ? null : local.ebs_csi_driver_role_name
+  name_prefix = local.ebs_csi_driver_role_name_use_prefix ? "${local.ebs_csi_driver_role_name}-" : null
+  path        = try(var.aws_ebs_csi_driver.role_path, "/")
+  description = try(var.aws_ebs_csi_driver.role_description, "IRSA for EBS")
+
+  assume_role_policy    = data.aws_iam_policy_document.ebs_csi_driver[0].json
+  max_session_duration  = try(var.aws_ebs_csi_driver.max_session_duration, null)
+  permissions_boundary  = try(var.aws_ebs_csi_driver.role_permissions_boundary_arn, null)
+  force_detach_policies = true
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi_driver" {
+  count = local.enable_aws_ebs_csi_driver ? length(local.ebs_csi_driver_policy_arns) : 0
+
+  role       = aws_iam_role.ebs_csi_driver[0].name
+  policy_arn = element(local.ebs_csi_driver_policy_arns, count.index)
+}
+
 resource "aws_eks_addon" "this" {
   for_each = { for k, v in var.cluster_addons : k => v }
 
@@ -101,7 +170,7 @@ resource "aws_eks_addon" "this" {
   preserve                    = try(each.value.preserve, null)
   resolve_conflicts_on_create = try(each.value.resolve_conflicts_on_create, "OVERWRITE")
   resolve_conflicts_on_update = try(each.value.resolve_conflicts_on_update, "PRESERVE")
-  service_account_role_arn    = try(each.value.service_account_role_arn, null)
+  service_account_role_arn    = try(each.value.service_account_role_arn, each.key == "aws-ebs-csi-driver" ? try(aws_iam_role.ebs_csi_driver[0].arn, null) : null)
 
   timeouts {
     create = try(each.value.timeouts.create, var.cluster_addons_timeouts.create, null)

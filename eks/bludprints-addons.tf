@@ -208,6 +208,10 @@ resource "kubectl_manifest" "provisioner" {
   depends_on = [
     time_sleep.karpenter
   ]
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = true
+  }
 }
 
 resource "kubectl_manifest" "aws_node_template" {
@@ -229,6 +233,10 @@ resource "kubectl_manifest" "aws_node_template" {
   depends_on = [
     kubectl_manifest.provisioner
   ]
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = true
+  }
 }
 
 ################################################################################
@@ -294,7 +302,7 @@ module "argocd" {
   namespace        = try(var.argocd.namespace, "argo-cd")
   create_namespace = try(var.argocd.create_namespace, true)
   chart            = try(var.argocd.chart, "argo-cd")
-  chart_version    = try(var.argocd.chart_version, "5.53.8")
+  chart_version    = try(var.argocd.chart_version, "5.53.14")
   repository       = try(var.argocd.repository, "https://argoproj.github.io/argo-helm")
   values           = try(var.argocd.values, [])
 
@@ -331,4 +339,110 @@ module "argocd" {
   tags = var.tags
 
   depends_on = [kubectl_manifest.aws_node_template]
+}
+
+################################################################################
+# AWS EFS CSI DRIVER
+################################################################################
+
+locals {
+  aws_efs_csi_driver_controller_service_account = try(var.aws_efs_csi_driver.controller_service_account_name, "efs-csi-controller-sa")
+  aws_efs_csi_driver_node_service_account       = try(var.aws_efs_csi_driver.node_service_account_name, "efs-csi-node-sa")
+  aws_efs_csi_driver_namespace                  = try(var.aws_efs_csi_driver.namespace, "kube-system")
+  efs_arns = lookup(var.aws_efs_csi_driver, "efs_arns",
+    ["arn:${local.partition}:elasticfilesystem:${local.region}:${local.account_id}:file-system/*"],
+  )
+  efs_access_point_arns = lookup(var.aws_efs_csi_driver, "efs_access_point_arns",
+    ["arn:${local.partition}:elasticfilesystem:${local.region}:${local.account_id}:access-point/*"]
+  )
+}
+
+module "aws_efs_csi_driver" {
+  source = "./modules/blueprints-addon"
+  create = var.enable_aws_efs_csi_driver
+
+  # https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/charts/aws-efs-csi-driver
+  name             = try(var.aws_efs_csi_driver.name, "aws-efs-csi-driver")
+  description      = try(var.aws_efs_csi_driver.description, "A Helm chart to deploy aws-efs-csi-driver")
+  namespace        = local.aws_efs_csi_driver_namespace
+  create_namespace = try(var.aws_efs_csi_driver.create_namespace, false)
+  chart            = try(var.aws_efs_csi_driver.chart, "aws-efs-csi-driver")
+  chart_version    = try(var.aws_efs_csi_driver.chart_version, "2.4.8")
+  repository       = try(var.aws_efs_csi_driver.repository, "https://kubernetes-sigs.github.io/aws-efs-csi-driver/")
+  values           = try(var.aws_efs_csi_driver.values, [])
+
+  timeout                    = try(var.aws_efs_csi_driver.timeout, null)
+  repository_key_file        = try(var.aws_efs_csi_driver.repository_key_file, null)
+  repository_cert_file       = try(var.aws_efs_csi_driver.repository_cert_file, null)
+  repository_ca_file         = try(var.aws_efs_csi_driver.repository_ca_file, null)
+  repository_username        = try(var.aws_efs_csi_driver.repository_username, null)
+  repository_password        = try(var.aws_efs_csi_driver.repository_password, null)
+  devel                      = try(var.aws_efs_csi_driver.devel, null)
+  verify                     = try(var.aws_efs_csi_driver.verify, null)
+  keyring                    = try(var.aws_efs_csi_driver.keyring, null)
+  disable_webhooks           = try(var.aws_efs_csi_driver.disable_webhooks, null)
+  reuse_values               = try(var.aws_efs_csi_driver.reuse_values, null)
+  reset_values               = try(var.aws_efs_csi_driver.reset_values, null)
+  force_update               = try(var.aws_efs_csi_driver.force_update, null)
+  recreate_pods              = try(var.aws_efs_csi_driver.recreate_pods, null)
+  cleanup_on_fail            = try(var.aws_efs_csi_driver.cleanup_on_fail, null)
+  max_history                = try(var.aws_efs_csi_driver.max_history, null)
+  atomic                     = try(var.aws_efs_csi_driver.atomic, null)
+  skip_crds                  = try(var.aws_efs_csi_driver.skip_crds, null)
+  render_subchart_notes      = try(var.aws_efs_csi_driver.render_subchart_notes, null)
+  disable_openapi_validation = try(var.aws_efs_csi_driver.disable_openapi_validation, null)
+  wait                       = try(var.aws_efs_csi_driver.wait, false)
+  wait_for_jobs              = try(var.aws_efs_csi_driver.wait_for_jobs, null)
+  dependency_update          = try(var.aws_efs_csi_driver.dependency_update, null)
+  replace                    = try(var.aws_efs_csi_driver.replace, null)
+  lint                       = try(var.aws_efs_csi_driver.lint, null)
+
+  postrender = try(var.aws_efs_csi_driver.postrender, [])
+  set = concat([
+    {
+      name  = "controller.serviceAccount.name"
+      value = local.aws_efs_csi_driver_controller_service_account
+    },
+    {
+      name  = "node.serviceAccount.name"
+      value = local.aws_efs_csi_driver_node_service_account
+    }],
+    try(var.aws_efs_csi_driver.set, [])
+  )
+  set_sensitive = try(var.aws_efs_csi_driver.set_sensitive, [])
+
+  # IAM role for service account (IRSA)
+  set_irsa_names = [
+    "controller.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn",
+    "node.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+  ]
+  create_role                   = try(var.aws_efs_csi_driver.create_role, true)
+  role_name                     = try(var.aws_efs_csi_driver.role_name, "AmazonEFSCSIDriverRole")
+  role_name_use_prefix          = try(var.aws_efs_csi_driver.role_name_use_prefix, true)
+  role_path                     = try(var.aws_efs_csi_driver.role_path, "/")
+  role_permissions_boundary_arn = lookup(var.aws_efs_csi_driver, "role_permissions_boundary_arn", null)
+  role_description              = try(var.aws_efs_csi_driver.role_description, "IRSA for aws-efs-csi-driver project")
+  role_policies                 = lookup(var.aws_efs_csi_driver, "role_policies", {})
+
+  policy_statements      = lookup(var.aws_efs_csi_driver, "policy_statements", [])
+  policy_name            = try(var.aws_efs_csi_driver.policy_name, "AmazonEFSCSIDriverPolicy")
+  policy_name_use_prefix = try(var.aws_efs_csi_driver.policy_name_use_prefix, true)
+  policy_path            = try(var.aws_efs_csi_driver.policy_path, null)
+  policy_description     = try(var.aws_efs_csi_driver.policy_description, "IAM Policy for AWS EFS CSI Driver")
+  policy_document        = try(var.aws_efs_csi_driver.policy_document, "")
+
+  oidc_providers = {
+    controller = {
+      provider_arn = local.oidc_provider_arn
+      # namespace is inherited from chart
+      service_account = local.aws_efs_csi_driver_controller_service_account
+    }
+    node = {
+      provider_arn = local.oidc_provider_arn
+      # namespace is inherited from chart
+      service_account = local.aws_efs_csi_driver_node_service_account
+    }
+  }
+
+  tags = var.tags
 }
