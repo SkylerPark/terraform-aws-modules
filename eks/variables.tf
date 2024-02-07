@@ -370,3 +370,27 @@ variable "aws_load_balancer_controller" {
   type        = any
   default     = {}
 }
+
+################################################################################
+# AWS EFS CSI Driver
+################################################################################
+variable "enable_aws_efs_csi_driver" {
+  description = "Enable AWS EFS CSI Driver add-on"
+  type        = bool
+  default     = false
+}
+
+variable "aws_efs_csi_driver" {
+  description = "EFS CSI Driver add-on configuration values"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# AWS EBS CSI Driver
+################################################################################
+variable "aws_ebs_csi_driver" {
+  description = "EBS CSI Driver add-on configuration values"
+  type        = any
+  default     = {}
+}
